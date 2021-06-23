@@ -9,7 +9,14 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+#-------------------------
+# 사용자 import
+#-------------------------
 
+from heroS import *
+import datetime
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -97,8 +104,8 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.pushButton.setText(_translate("Dialog", "PushButton"))
-        self.pushButton_2.setText(_translate("Dialog", "PushButton"))
+        self.pushButton.setText(_translate("Dialog", "계좌상태"))
+        self.pushButton_2.setText(_translate("Dialog", "보유현황"))
         self.pushButton_6.setText(_translate("Dialog", "PushButton"))
         self.pushButton_3.setText(_translate("Dialog", "PushButton"))
         self.pushButton_8.setText(_translate("Dialog", "PushButton"))
@@ -114,6 +121,61 @@ class Ui_Dialog(object):
         self.pushButton_15.setText(_translate("Dialog", "PushButton"))
         self.pushButton_16.setText(_translate("Dialog", "PushButton"))
 
+        #-------------------------------------------------------------
+        # 사용자 정의 이벤트 connect
+        #-------------------------------------------------------------
+        
+        self.pushButton.clicked.connect(self.pushButton_clicked)
+
+    #-------------------------------------------------------------
+    # 사용자 정의영역
+    #-------------------------------------------------------------
+    def __init__(self):
+
+        self.heroS = heroS()
+
+         # timer
+        self.timer = QTimer()
+        self.timer.start(3000)
+        self.timer.timeout.connect(self.KOSDAQ_BUY)
+
+
+
+        #self.timer2 = QTimer()
+        #self.timer2.start(1000)
+        #self.timer2.timeout.connect(self.KOSDAQ_SELL)
+
+    
+
+
+    #-------------------------------------------------------------
+    # 사용자 정의함수
+    #-------------------------------------------------------------
+    def pushButton_clicked(self):
+        print("button_clicked")
+        self.heroS.getBasicInfo()
+
+    def KOSDAQ_BUY(self):
+        
+        print("KB_activate")
+        list = self.heroS.getSetUpStock(0,0)
+        code = str(list[1])
+        if(list[0]):
+            print(code+" "+"buy signal")
+            self.mainlog.append(code+" "+"buy signal")   
+
+
+    def KOSDAQ_SELL(self):
+        
+        print("KS_activate")
+        list = self.heroS.getSetUpStock(0,1)
+        code = str(list[1])
+        if(list[0]):
+            print(code+" "+"sell signal")
+            self.mainlog.append(code+" "+"sell signal")  
+
+    def TRADER(flag,code):
+        print("ddd")
 
 if __name__ == "__main__":
     import sys
