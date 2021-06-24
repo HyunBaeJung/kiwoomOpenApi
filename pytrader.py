@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5 import uic
 from Kiwoom import *
 
-form_class = uic.loadUiType("C:\\Users\\gusqo\\Documents\\GitHub\\kiwoomOpenApi\\exam2\\pytrader.ui")[0]
+form_class = uic.loadUiType("C:\\Users\\gusqo\\Documents\\GitHub\\kiwoomOpenApi\\pytrader.ui")[0]
 
 
 class MyWindow(QMainWindow, form_class):
