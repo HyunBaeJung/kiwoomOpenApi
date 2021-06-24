@@ -335,7 +335,7 @@ class MyWindow(QMainWindow, form_class):
         self.kiwoom.set_input_value("종목코드", code)
         self.kiwoom.comm_rq_data("opt10001_req", "opt10001", 0, "2001")
         
-        return int(self.kiwoom.stock_current_price.replace(",",""))
+        return int(self.kiwoom.stock_current_price.replace(",","").replace("-",""))
 
     # 현재잔고기준 주문주식수 계산
     # In : 원하는% , 종목코드
@@ -345,12 +345,16 @@ class MyWindow(QMainWindow, form_class):
         accountAvailable = self.balace_check()
         searchCurrentPrice = self.searchCurrentPrice(code)
 
-        # 목표주식수 = ( 잔고 * % ) / 현재가
-        stocksNum = (accountAvailable*(percent/100)) // searchCurrentPrice
+        #부호제거
+        if int(searchCurrentPrice) < 0:
+            searchCurrentPrice = -1*int(searchCurrentPrice)
+        else :
+            searchCurrentPrice = int(searchCurrentPrice) 
 
-        print(accountAvailable)
-        print(searchCurrentPrice)
-        print(stocksNum)
+        # 목표주식수 = ( 잔고 * % ) / 현재가
+        stocksNum = int( (accountAvailable*(percent/100)) // searchCurrentPrice )
+        
+        print("주문주식수 : " + str(stocksNum))
         
         return stocksNum
     
