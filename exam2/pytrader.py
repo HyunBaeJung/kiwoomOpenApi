@@ -113,9 +113,7 @@ class MyWindow(QMainWindow, form_class):
             :param conditionIndex: string - 조건식 인덱스(여기서만 인덱스가 string 타입으로 전달됨)
             """
             code = order_detail[0]
-            print("이름받아와버리기!")
             name = self.kiwoom.get_master_code_name(code)
-            print("이름받아와버림!")
             event = order_detail[1]
             conditionName = order_detail[2]
             conditionIndex = order_detail[3]
@@ -130,7 +128,9 @@ class MyWindow(QMainWindow, form_class):
                         print("횡보중 재진입_BUY")
                     else:
                         print("풀.매.수")
-                        self.send_auto_order(account="default",order_type=1,code=order_detail[0],hoga="03",num=10,price=0)
+                        stockCurrentPrice = self.searchCurrentPrice(code)
+                        stocksNum = self.sharesPerPercentage(1,code)
+                        self.send_auto_order(account="default",order_type=1,code=code,hoga="00",num=stocksNum,price=stockCurrentPrice)
 
                 if event == "N":
                     print("DAQ_BUY_시작") 
@@ -138,7 +138,9 @@ class MyWindow(QMainWindow, form_class):
                         print("재시작 보유중")
                     else:
                         print("풀.매.수")
-                        self.send_auto_order(account="default",order_type=1,code=order_detail[0],hoga="03",num=10,price=0)
+                        stockCurrentPrice = self.searchCurrentPrice(code)
+                        stocksNum = self.sharesPerPercentage(1,code)
+                        self.send_auto_order(account="default",order_type=1,code=code,hoga="00",num=stocksNum,price=stockCurrentPrice)
 
             if conditionName == "DAQ_SELL":
                 print("Sell_Order")
@@ -146,7 +148,9 @@ class MyWindow(QMainWindow, form_class):
                     print("DAQ_SELL_종목편입") 
                     if self.checkOwnStock(name):
                         print("풀.매.도")
-                        self.send_auto_order(account="default",order_type=2,code=order_detail[0],hoga="03",num=10,price=0)
+                        stockCurrentPrice = self.searchCurrentPrice(code)
+                        stocksNum = self.selectOwnStockPercent(100,name)
+                        self.send_auto_order(account="default",order_type=2,code=code,hoga="00",num=stocksNum,price=stockCurrentPrice)
                     else:
                         print("횡보중 재진입_SELL")
             
@@ -289,6 +293,41 @@ class MyWindow(QMainWindow, form_class):
         else:
             return False
     
+    # 동일종목 보유갯수 %기준 조회
+    # In : 종목이름, %
+    # Out : 보유주식 갯수 %
+    def selectOwnStockPercent(self,percent,name):
+        print("selectOwnStockPercent")
+
+        self.kiwoom.reset_opw00018_output()
+        account_number = self.kiwoom.get_login_info("ACCNO")
+        account_number = account_number.split(';')[0]
+
+        self.kiwoom.set_input_value("계좌번호", account_number)
+        self.kiwoom.comm_rq_data("opw00018_req", "opw00018", 0, "2000")
+
+        # Item list
+        item_count = len(self.kiwoom.opw00018_output['multi'])
+        check_list = []
+
+        for j in range(item_count):
+            row = self.kiwoom.opw00018_output['multi'][j]
+            check_list.append([row[0],row[1]])
+
+        target=0
+
+        for list in check_list:
+            if name in list:
+                target = int(list[1])
+                break
+        
+        if target != 0:
+            target = target//(percent/100)
+        else:
+            target = -1
+        
+        return int(target)
+
     # 현재가조회
     # In : 종목코드
     # Out : 현재가
@@ -298,12 +337,31 @@ class MyWindow(QMainWindow, form_class):
         
         return int(self.kiwoom.stock_current_price.replace(",",""))
 
+    # 현재잔고기준 주문주식수 계산
+    # In : 원하는% , 종목코드
+    # Out : 주문수량
+    def sharesPerPercentage(self,percent,code):
+        
+        accountAvailable = self.balace_check()
+        searchCurrentPrice = self.searchCurrentPrice(code)
+
+        # 목표주식수 = ( 잔고 * % ) / 현재가
+        stocksNum = (accountAvailable*(percent/100)) // searchCurrentPrice
+
+        print(accountAvailable)
+        print(searchCurrentPrice)
+        print(stocksNum)
+        
+        return stocksNum
     
     def test_button(self):
-        self.balace_check()
-        self.selectOwnStock()
-        
+        print("test--------")
+        stocksNum = self.sharesPerPercentage(10,"229200")
+        print(stocksNum)
 
+        self.selectOwnStock()
+        print(self.selectOwnStockPercent(100,"위지윅스튜디오"))
+        print(self.selectOwnStockPercent(100,"와자작스튜디오"))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
