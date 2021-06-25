@@ -71,12 +71,8 @@ class MyWindow(QMainWindow, form_class):
         if account == "default":
             account = self.comboBox.currentText()
 
-        print(account)
-        print(order_type)
-        print(code)
-        print(hoga)
-        print(num)
-        print(price)
+        print("account : "+ str(account) + " order_type : "+ str(order_type) + " code : "+ str(code) + " hoga : "+ str(hoga) + " num : "+ str(num) + " price : "+ str(price) )
+
 
         self.kiwoom.send_order("send_order_req", "0101", account, order_type, code, num, price, hoga, "")
 
@@ -329,6 +325,39 @@ class MyWindow(QMainWindow, form_class):
         return int(target)
 
     # 현재가조회
+    # In : 전체종목구분(0:전체, 1:종목),매매구분(0:전체, 1:매도, 2:매수),종목코드,체결구분(0:전체, 2:체결, 1:미체결)
+    # Out : 현재가
+    def selectNotConcludedOrder(self,rangeGb,tradeGb,code,dealGb):      
+        print("selectNotConcludedOrder")
+
+        self.kiwoom.reset_opt10075_output()
+
+        account_number = self.kiwoom.get_login_info("ACCNO")
+        account_number = account_number.split(';')[0]
+
+        #계좌번호 = 전문 조회할 보유계좌번호
+        self.kiwoom.set_input_value("계좌번호", account_number)
+        #전체종목구분 = 0:전체, 1:종목
+        self.kiwoom.set_input_value("전체종목구분"	,  rangeGb)
+        #매매구분 = 0:전체, 1:매도, 2:매수
+        self.kiwoom.set_input_value("매매구분"	,  tradeGb)
+        #종목코드 = 전문 조회할 종목코드
+        self.kiwoom.set_input_value("종목코드"	,  code)
+        #체결구분 = 0:전체, 2:체결, 1:미체결
+        self.kiwoom.set_input_value("체결구분"	,  dealGb)
+
+        self.kiwoom.comm_rq_data("opt10075_req", "opt10075", 0, "2002")
+
+         # Item list
+        item_count = len(self.kiwoom.opt10075_output['multi'])
+
+        for j in range(item_count):
+            row = self.kiwoom.opt10075_output['multi'][j]
+            for i in range(len(row)):
+                print(row[i])   
+
+
+    # 미채결 조회
     # In : 종목코드
     # Out : 현재가
     def searchCurrentPrice(self,code):
@@ -366,6 +395,9 @@ class MyWindow(QMainWindow, form_class):
         self.selectOwnStock()
         print(self.selectOwnStockPercent(100,"위지윅스튜디오"))
         print(self.selectOwnStockPercent(100,"와자작스튜디오"))
+
+        # In : 전체종목구분(0:전체, 1:종목),매매구분(0:전체, 1:매도, 2:매수),종목코드,체결구분(0:전체, 2:체결, 1:미체결)
+        self.selectNotConcludedOrder(0,0,"",1)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

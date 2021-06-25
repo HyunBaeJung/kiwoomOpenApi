@@ -153,8 +153,9 @@ class Kiwoom(QAxWidget):
         elif rqname == "opw00018_req":
             self._opw00018(rqname, trcode)
         elif rqname =="opt10001_req":
-            print("[opt10001_req]")
             self._opt10001(rqname, trcode)
+        elif rqname == "opt10075_req":
+            self._opt10075(rqname, trcode)
 
         try:
             self.tr_event_loop.exit()
@@ -236,7 +237,35 @@ class Kiwoom(QAxWidget):
 
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price,
                                                   earning_rate])
+    
+    def reset_opt10075_output(self):
+        print("reset_opt10075_output")
+        self.opt10075_output = {'multi': []}
+    
+    
+    #opt10075
+    def _opt10075(self, rqname, trcode):
+        print("_opt10075")
 
+                # multi data
+        rows = self._get_repeat_cnt(trcode, rqname)
+        for i in range(rows):
+            #주문번호,종목코드,주문상태,종목명,주문수량,주문가격,미체결수량,현재가
+
+            order_no = self._comm_get_data(trcode, "", rqname, i, "주문번호")
+            code = self._comm_get_data(trcode, "", rqname, i, "종목코드")
+            order_status = self._comm_get_data(trcode, "", rqname, i, "주문상태")
+            name = self._comm_get_data(trcode, "", rqname, i, "종목명")
+            order_qty = self._comm_get_data(trcode, "", rqname, i, "주문수량")
+            order_price = self._comm_get_data(trcode, "", rqname, i, "주문가격")
+            nuconcluded_order_qty = self._comm_get_data(trcode, "", rqname, i, "미체결수량")
+            current_price = self._comm_get_data(trcode, "", rqname, i, "현재가")
+
+
+            order_price = Kiwoom.change_format(order_price)
+            current_price = Kiwoom.change_format(current_price)
+
+            self.opt10075_output['multi'].append([ order_no,code,order_status,name,order_qty,order_price,nuconcluded_order_qty,current_price ])
 
     ###############################################################
     # 메서드 정의: 조건검색 관련 메서드와 이벤트                    #
