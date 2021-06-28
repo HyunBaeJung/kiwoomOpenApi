@@ -351,10 +351,16 @@ class MyWindow(QMainWindow, form_class):
          # Item list
         item_count = len(self.kiwoom.opt10075_output['multi'])
 
+        result = []
+
         for j in range(item_count):
+            detail = []
             row = self.kiwoom.opt10075_output['multi'][j]
             for i in range(len(row)):
-                print(row[i])   
+                detail.append(row[i])
+            result.append(detail)
+
+        return result   
 
 
     # 미채결 조회
@@ -389,15 +395,17 @@ class MyWindow(QMainWindow, form_class):
     
     def test_button(self):
         print("test--------")
-        stocksNum = self.sharesPerPercentage(10,"229200")
-        print(stocksNum)
+        #stocksNum = self.sharesPerPercentage(10,"229200")
+        #print(stocksNum)
 
-        self.selectOwnStock()
-        print(self.selectOwnStockPercent(100,"위지윅스튜디오"))
-        print(self.selectOwnStockPercent(100,"와자작스튜디오"))
+        #self.selectOwnStock()
+        #print(self.selectOwnStockPercent(100,"위지윅스튜디오"))
+        #print(self.selectOwnStockPercent(100,"와자작스튜디오"))
 
         # In : 전체종목구분(0:전체, 1:종목),매매구분(0:전체, 1:매도, 2:매수),종목코드,체결구분(0:전체, 2:체결, 1:미체결)
-        self.selectNotConcludedOrder(0,0,"",1)
+        print( self.selectNotConcludedOrder(0,0,"",1) )
+        print("**---------------------")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
